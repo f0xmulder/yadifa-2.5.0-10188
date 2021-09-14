@@ -1,0 +1,420 @@
+#
+# Example yadifa configuration file.
+#
+
+<main>
+        # Detach from the console
+        daemon                      off
+
+        # Jail the application
+        chroot                      off
+
+        # The path where all the log files will be written
+        logpath                     "/var/log/yadifa"
+
+        # The location of the pid file
+        pidfile                     "/var/run/yadifad.pid"
+
+        # The path where all zone files will be written
+        datapath                    "/var/zones"
+
+        # The path where the DNSSEC keys are found
+        keyspath                    "/var/zones/keys"
+
+        # The path where the transfer and journaling files will be written (AXFR & IXFR)
+        xfrpath                     "/var/zones/xfr"
+
+        # A string returned by a query of hostname. CH TXT (note if you leave this out, the real hostname will be given back)
+        hostname                    "server-yadifad"
+
+        # An ID returned by a query to id.server. CH TXT
+        serverid                     "yadifad-01"
+
+        # The version returned by a query to version.yadifa. CH TXT
+        version                      "2.5.0"
+
+        # Set the maximum UDP packet size.  Cannot be less than 512.  Cannot be more than 65535.  Typical choice is 4096.
+        edns0-max-size              4096
+
+        # The maximum number of parallel TCP queries.
+
+        max-tcp-queries             100
+
+        # The user id to use (an integer can be used)
+        user                        root
+
+        # The group id to use (an integer can be used)
+        group                        root
+
+        # The DNS port.  Any DNS query will be made using that port unless a specific value is used.
+        port                        53
+
+        # The interfaces to listen to.
+        listen                      0.0.0.0
+
+        # Enable the collection and logging of statistics
+        statistics                  on
+
+        # Choose the query log format (0 for none, 1 for YADIFA, 2 for BIND compatible, 3 for YADIFA and BIND)
+        queries-log-type            1
+
+        # Drop queries with erroneous content
+        # answer-formerr-packets    on
+
+        # Maximum number of records in an AXFR packet.  Set to one for compatibility
+        # with very old name servers
+        # axfr-maxrecordbypacket    0
+
+        # Global Access Control List rules.
+        #
+        # Rules can be defined on network ranges, TSIG signatures, and ACL rules
+
+        # simple queries:
+        allow-query                 any
+
+        # dynamic update of a zone
+        allow-update                none
+
+        # transfer of a zone (AXFR or IXFR)
+        allow-transfer              none
+
+        # notify of a change in the primary
+        allow-notify                none
+
+        # If YADIFA has the controller enabled, allow control only for these clients (none by default)
+        allow-control               controller
+
+</main>
+
+# If YADIFA has NSID support (default)
+<nsid>
+        ascii "yadifad example NSID"
+        # alternatively, an hexadecimal format can be used
+        # hex 79616469666164206578616d706c65204e5349440a
+</nsid>
+
+# If YADIFA has the controller enabled (needs to have been configured at build using --enable-ctrl)
+<control>
+        # enable the controller
+        enabled true
+</control>
+
+# If YADIFA has been compiled with the Response Rate Limiter (default)
+<rrl>
+        # enable the RRL
+        enabled true
+
+        # don't actually limit the response rate, only log what the filter would do
+        log_only false
+
+        # how many responses per second are allowed for a (masked with the prefix) client
+        responses_per_second 5
+
+        # how many errors per second are allowed for a (masked with the prefix) client
+        errors_per_second 5
+
+        # window of time in which the rates are measured, expressed in seconds
+        window 15
+
+        # every "slip" dropped answers, a truncated answer may randomly be given so the client can ask again using TCP
+        slip 2
+
+        # the minimum size of the table storing (masked with the prefix) clients
+        min_table_size 1024
+
+        # the maximum size of the table storing (masked with the prefix) clients
+        max_table_size 16384
+
+        # IPv4 clients are masked with this prefix
+        ipv4_prefix_length 24
+
+        # IPv6 clients are masked with this prefix
+        ipv6_prefix_length 56
+
+        # the list of IP/networks (Access Control List) not impacted by the RRL
+        exempted none
+</rrl>
+
+#
+# Logging output channels configurations
+#
+# name  stream-name arguments
+#
+# name          is arbitrary
+# stream-name   defines the output type (ie: a file name or syslog)
+# arguments     is specific to the output type (ie: unix file access rights or syslog options and facilities
+
+<channels>
+#       name        stream-name     arguments
+        database    database.log    0644
+        dnssec      dnssec.log      0644
+        server      server.log      0644
+        statistics  statistics.log  0644
+        system      system.log      0644
+        zone        zone.log        0644
+        queries     queries.log     0644
+        all         all.log         0644
+
+        syslog      syslog          USER,CRON,PID
+
+        # New since 2.5.0: the output can be piped to any program.
+        # It is to be noted that the command will be run even if no logger is bound to it.
+        # gzip-log    "|/usr/bin/gzip - >> /var/log/yadifa/yadifa.log.gz"
+
+        # although possible, these two will end up writing to /dev/null if daemon is enabled
+        stderr      STDERR
+        stdout      STDOUT
+</channels>
+
+# Logging input configurations
+#
+# name debug-level channels
+#
+# name          is predefined
+# debuglevel    uses the same names as syslog or * or all to filter the input
+# channels      is a comma-separated list of channels
+
+# In production, use EMERG,ALERT,CRIT,ERR,WARNING,NOTICE,INFO instead of *
+
+<loggers>
+#       bundle          debuglevel                          channels
+        database        prod                                database,all
+        dnssec          prod                                dnssec,all
+        server          prod                                server,all
+        stats           prod                                statistics
+        system          prod                                system,all
+        zone            prod                                zone,all
+        queries         prod                                queries
+</loggers>
+
+#
+# TSIG Key configuration
+#
+
+include "keys.conf"
+
+<key>
+        name        primary-secondary
+        algorithm   hmac-md5
+        secret      PrimaryAndSecondaryKey==
+</key>
+
+#
+# Access Control List definitions
+#
+# Meant to be used in access lists parameters (allow-*)
+# arbitrary-name comma-separated-list
+#
+
+<acl>
+        transferer  key primary-secondary
+        admins      192.0.2.0/24, 2001:db8::74
+        primary     192.0.2.53
+        controller  key abroad-admin-key
+</acl>
+
+#
+# Primary domain zone config
+#
+
+<zone>
+        type                    primary
+        domain                  localhost
+        file                    primaries/localhost.
+        allow-transfer          none
+        allow-update            none
+        allow-update-forwarding none
+</zone>
+
+<zone>
+        type                    primary
+        domain                  localhost6
+        file                    primaries/localhost6.
+        allow-transfer          none
+        allow-update            none
+        allow-update-forwarding none
+</zone>
+
+<zone>
+        type                    primary
+        domain                  0.0.127.in-addr.arpa
+        file                    primaries/0.0.127.in-addr.arpa.
+        allow-transfer          none
+        allow-update            none
+        allow-update-forwarding none
+</zone>
+
+<zone>
+        type                    primary
+        domain                  0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa
+        file                    primaries/0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa.
+        allow-transfer          none
+        allow-update            none
+        allow-update-forwarding none
+</zone>
+
+<zone>
+        # This server is primary for that zone (mandatory)
+        type                    primary
+
+        # The domain name (mandatory)
+        domain                  somedomain.eu.
+
+        # The zone file, relative to 'datapath'.  (mandatory for a primary)
+        file                    primaries/somedomain.eu.
+
+
+        dnssec-policy           "typical-policy"
+</zone>
+
+################################################################################
+################################################################################
+###
+### POLICIES
+###
+################################################################################
+################################################################################
+
+<dnssec-policy>
+    # name of the 'dnssec-policy'
+    id                      "typical-policy"
+
+    description             "Example of a policy with ZSK and KSK"
+
+    # denial nsec|"nsec3-parameters-section-name"
+    # can be the keyword 'nsec' or the 'id | name' of a 'denial' section
+    denial                  "nsec3-fixed"
+
+    # at least one: key-descriptor "name"
+    # they define KSK & ZSK keys
+
+    key-suite               "zsk-1024"
+    key-suite               "ksk-2048"
+
+</dnssec-policy>
+
+<key-suite>
+    # name of the key-suite
+    id                      "zsk-1024"
+    key-template            "zsk-rsa-sha256-1024"
+    # optional, without it, the keys found in the storage are used
+    key-roll                "monthly-diary"
+</key-suite>
+
+<key-suite>
+    # name of the key-suite
+    id                      "ksk-2048"
+    key-template            "ksk-rsa-sha256-2048"
+    # optional, without it, the keys found in the storage are used
+    key-roll                "yearly-diary"
+</key-suite>
+
+######################################################
+
+<key-template>
+    id                  "zsk-rsa-sha512-1024"
+    algorithm           RSASHA512
+    size                1024
+</key-template>
+
+<key-template>
+    id                  "zsk-rsa-sha512-2048"
+    algorithm           RSASHA512
+    size                2048
+</key-template>
+
+<key-template>
+    id                  "zsk-rsa-sha256-1024"
+    algorithm           RSASHA256
+    size                1024
+</key-template>
+
+<key-template>
+    id                  "zsk-rsa-sha256-2048"
+    algorithm           RSASHA256
+    size                2048
+</key-template>
+
+<key-template>
+    id                  "ksk-rsa-sha512-1024"
+    ksk                 1
+    algorithm           RSASHA512
+    size                1024
+</key-template>
+
+<key-template>
+    id                  "ksk-rsa-sha512-2048"
+    ksk                 1
+    algorithm           RSASHA512
+    size                2048
+</key-template>
+
+<key-template>
+    id                  "ksk-rsa-sha256-1024"
+    ksk                 1
+    algorithm           RSASHA256
+    size                1024
+</key-template>
+
+<key-template>
+    id                  "ksk-rsa-sha256-2048"
+    ksk                 1
+    algorithm           RSASHA256
+    size                2048
+</key-template>
+
+######################################################
+
+<denial>
+    type NSEC3
+    id            "nsec3-random"
+    salt-length   32
+    iterations    10
+    # can be 0 or 1, true or false, and on or off
+    optout        off
+</denial>
+
+<denial>
+    type NSEC3
+    id            "nsec3-fixed"
+    salt          "BA5EBA11"      # if nsec3-resalting is off 
+    iterations    5           # the number of additional times the hash function has been performe
+    # can be 0 or 1, true or false, and on or off
+    optout        off
+</denial>
+
+######################################################
+
+# The order of fields goes:
+#
+#                    minutes     hours       days               months         weekdays         weeks
+<key-roll>
+
+    id                 "yearly-diary"
+
+    generate            5          0           15                  6            *                 * # this year   (2018) 15/06 at 00:05
+    publish             10         0           15                  *            *                 * #                             00:10
+    activate            15         0           16                  *            *                 * #                    16/06 at 00:15
+    inactive            15         0           17                  *            *                 * #             (2019) 17/06 at 00:15
+    remove              15        11           18                  *            *                 * #             (2019) 18/06 at 11:15
+</key-roll>
+
+<key-roll>
+    id                 "monthly-diary"
+
+    generate            5          0           *                   *            tue               0 # 1 tuesday   of the month at 00:05
+    publish             10         0           *                   *            tue               0 #                             00:10
+    activate            15         0           *                   *            wed               0 # 1 wednesday of the month at 00:15
+    inactive            15         0           *                   *            thu               0 # 1 thursday  of the month at 00:15
+    remove              15        11           *                   *            fri               0 # 1 friday    of the month at 11:15
+</key-roll>
+
+<key-roll>
+    id                 "weekly-diary"
+
+    generate            25         0           *                   *            sun               * # every sunday of the month at 00:25
+    publish             30         0           *                   *            *                 * #                           at 00:30
+    activate            35         0           *                   *            *                 * #                           at 00:35
+    inactive            35         0           *                   *            *                 * #                           at 00:35
+    remove              35        11           *                   *            *                 * #                           at 11:35
+</key-roll>

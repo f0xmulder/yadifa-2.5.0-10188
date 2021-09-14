@@ -1,0 +1,409 @@
+'\" t
+.\" Manual page created with latex2man on Tue Oct 13 12:59:04 2020
+.\" NOTE: This file is generated, DO NOT EDIT.
+.de Vb
+.ft CW
+.nf
+..
+.de Ve
+.ft R
+
+.fi
+..
+.TH "YADIFAD" "8" "2021\-06\-02" "YADIFA " "YADIFA "
+.SH NAME
+
+.PP
+YADIFAD
+\- an authoritative Internet domain name server. 
+.PP
+.SH SYNOPSIS
+
+.PP
+yadifad
+[\fB\-\-config|\-c\fP\fI configfile\fP]
+[\fB\-\-daemon|\-d\fP]
+[\fB\-u\fP\fI uid\fP]
+[\fB\-g\fP\fI gid\fP]
+[\fB\-V\fP]
+[\fB\-h\fP]
+.PP
+.SH DESCRIPTION
+
+.PP
+yadifad
+is a Domain Name System (DNS) server, part of the YADIFA distribution from EURid vzw/asbl. The latest version of YADIFA
+can be found on:
+.br
+.ce 100
+\fBhttp://www.yadifa.eu/download\fP
+.ce 0
+
+.PP
+yadifad
+reads the zone files from yadifad.conf, and starts up an authoritative name server. 
+It listens to UDP and TCP DNS queries and returns answers from its own database. 
+.PP
+yadifad
+knows the main DNS protocols: 
+.TP
+.B *
+AXFR 
+.TP
+.B *
+IXFR 
+.TP
+.B *
+DNSSEC 
+.TP
+.B *
+DNS Update 
+.TP
+.B *
+NOTIFY 
+.PP
+yadifad
+works only with 1 CLASS:
+.PP
+.TS
+tab(&);
+l l lw(2cm).
+T{
+Class 
+T}&T{
+Value 
+T}&T{
+Definition
+T}
+T{
+T}
+T{
+IN
+T}&T{
+1 
+T}&T{
+Internet class
+T}
+.TE
+.PP
+yadifad
+supports following TYPES:
+.PP
+.TS
+tab(&);
+l l l.
+T{
+Type 
+T}&T{
+Value 
+T}&T{
+Defining RFC
+T}
+T{
+T}
+T{
+A 
+T}&T{
+1 
+T}&T{
+1035
+T}
+T{
+AAAA 
+T}&T{
+28 
+T}&T{
+3596
+T}
+T{
+CNAME 
+T}&T{
+5 
+T}&T{
+1035
+T}
+T{
+DNSKEY 
+T}&T{
+48 
+T}&T{
+4034
+T}
+T{
+DS 
+T}&T{
+43 
+T}&T{
+4034
+T}
+T{
+HINFO 
+T}&T{
+12 
+T}&T{
+1035
+T}
+T{
+MX 
+T}&T{
+15 
+T}&T{
+1035
+T}
+T{
+NAPTR 
+T}&T{
+35 
+T}&T{
+3403
+T}
+T{
+NS 
+T}&T{
+2 
+T}&T{
+1035
+T}
+T{
+NSEC 
+T}&T{
+47 
+T}&T{
+4034
+T}
+T{
+NSEC3 
+T}&T{
+50 
+T}&T{
+5155
+T}
+T{
+NSEC3PARAM 
+T}&T{
+51 
+T}&T{
+5155
+T}
+T{
+PTR 
+T}&T{
+12 
+T}&T{
+1035
+T}
+T{
+RRSIG 
+T}&T{
+46 
+T}&T{
+4034
+T}
+T{
+SOA 
+T}&T{
+6 
+T}&T{
+1035
+T}
+T{
+SRV 
+T}&T{
+33 
+T}&T{
+2782
+T}
+T{
+SSHFP 
+T}&T{
+44 
+T}&T{
+4255
+T}
+T{
+TXT 
+T}&T{
+16 
+T}&T{
+1035
+T}
+.TE
+.PP
+Other tyes and pseudo resource records: 
+.PP
+.TS
+tab(&);
+l l l.
+T{
+Type 
+T}&T{
+Value 
+T}&T{
+Defining RFC
+T}
+T{
+T}
+T{
+* 
+T}&T{
+255 
+T}&T{
+1035
+T}
+T{
+AXFR 
+T}&T{
+252 
+T}&T{
+1035
+T}
+T{
+IXFR 
+T}&T{
+251 
+T}&T{
+1035
+T}
+T{
+OPT 
+T}&T{
+41 
+T}&T{
+6891
+T}
+.TE
+.PP
+.SH OPTIONS
+
+.PP
+.TP
+[\fB\-\-config|\-c\fP\fI configfile\fP]
+ Another config file will be used. 
+.TP
+[\fB\-\-daemon|\-d\fP]
+ Starts the name server in daemon mode (default) 
+.TP
+[\fB\-\-uid|\-u\fP\fI uid\fP]
+ Starts the name server with the given uid. 
+.TP
+[\fB\-\-gid|\-g\fP\fI gid\fP]
+ Starts the name server with the given gid. 
+.PP
+.TP
+[\fB\-V\fP]
+ Shows version information. 
+.TP
+[\fB\-\-help|\-h\fP]
+ Shows a help text 
+.PP
+.SH SIGNALS
+
+.PP
+.TP
+SIGHUP 
+reloads the zone and key sections in the configuration file and reloads the zone file(s) with incremented serial number, and close all log files and reopens them. 
+.TP
+SIGINT 
+shutdowns the server 
+.TP
+SIGTERM 
+(see SIGINT) 
+.PP
+.SH CONFIGURATION
+
+.PP
+The yadifad.conf itself is mandatory, but can be empty. No options is needed for using yadifad DNS name server. 
+.PP
+The yadifad configuration options can be found in yadifad.conf.5 man page. A complete description is provided in the YADIFA 2.5.0 Reference Manual (YM24). 
+.PP
+.SH FILES
+
+.PP
+.TP
+yadifad.conf
+ The YADIFA
+configuration file. 
+.TP
+yadifad
+ The name server binary. 
+.TP
+yadifad.8
+ This man page. 
+.TP
+yadifad.conf.5
+ Configuration man page for YADIFA. 
+.PP
+.SH SEE ALSO
+
+.PP
+\fIyadifad.conf\fP(5)
+.PP
+.SH REQUIREMENTS
+
+.PP
+.TP
+OpenSSL 
+yadifad
+requires OpenSSL version 1.1.1 or later. 
+.PP
+.SH CHANGES
+
+.PP
+Please check the README
+file from the source code. 
+.PP
+.SH VERSION
+
+.PP
+Version: 2.5.0 of 2021\-06\-02. 
+.PP
+.SH MAILING LISTS
+
+.PP
+There is a mailinglist for questions relating to any program in the yadifa package:
+.br
+.TP
+.B *
+\fByadifa\-users@mailinglists.yadifa.eu\fP
+.br
+for submitting questions/answers. 
+.PP
+.TP
+.B *
+\fBhttp://www.yadifa.eu/mailing\-list\-users\fP
+.br
+for subscription requests. 
+.PP
+If you would like to stay informed about new versions and official patches send a subscription request to 
+via: 
+.TP
+.B *
+\fBhttp://www.yadifa.eu/mailing\-list\-announcements\fP
+.PP
+(this is a read\-only list). 
+.PP
+.SH LICENSE AND COPYRIGHT
+
+.PP
+.TP
+Copyright 
+(C)2011\-2021, EURid vzw/asbl
+.br
+B\-1831 Diegem, Belgium
+.br
+\fBinfo@yadifa.eu\fP
+.PP
+.SH AUTHORS
+
+.PP
+Gery Van Emelen 
+.br
+Email: \fBGery.VanEmelen@EURid.eu\fP
+.br
+Eric Diaz Fernandez 
+.br
+Email: \fBEric.DiazFernandez@EURid.eu\fP
+.PP
+WWW: \fBhttp://www.EURid.eu\fP
+.PP
+.\" NOTE: This file is generated, DO NOT EDIT.

@@ -1,0 +1,11 @@
+[Unit]
+Description=yadifa nameserver
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/yadifad --nodaemon
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
